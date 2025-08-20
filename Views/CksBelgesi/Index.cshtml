@@ -1,0 +1,87 @@
+﻿@model IEnumerable<TarimHibe.Models.CKS_Bilgileri>
+@{
+    ViewBag.Title = "CKS Belgeleri";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var currentYear = (int)ViewBag.CurrentYear;
+    bool validThisYear = (bool)ViewBag.HasValidThisYear;
+}
+
+<h2 class="mb-4">CKS Belge Arşivi & Yükleme</h2>
+
+@if (!validThisYear)
+{
+    <div class="alert alert-warning">
+        Bu yıl için onaylı bir CKS belgeniz yok. Lütfen yükleyin.
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null){
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null){
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<div class="card mb-4">
+    <div class="card-header">Yeni CKS Belgesi Yükle</div>
+    <div class="card-body">
+        <form asp-action="Upload" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="file" class="form-label">CKS Belgesi Yükle</label>
+                <input type="file" name="file" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="yil" class="form-label">Geçerli Olduğu Yıl</label>
+                <select name="yil" class="form-select">
+                    @{
+                        var thisYear = DateTime.Now.Year;
+                        var nextYear = thisYear + 1;
+                    }
+                    <option value="@thisYear">@thisYear</option>
+                    <option value="@nextYear">@nextYear</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Yükle</button>
+        </form>
+
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Yüklenen Belgeleriniz</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Yıl</th>
+                    <th>Dosya</th>
+                    <th>Onay Durumu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr class="@(c.Yil == currentYear && c.OnayDurumu == 1 ? "table-success" : "")">
+                        <td>@c.Yil</td>
+                        <td>
+                            <a href="~/uploads/cks/@c.BelgeDosyasi" target="_blank">
+                                @c.BelgeDosyasi
+                            </a>
+                        </td>
+                        <td>
+                            @Html.Raw(
+                                     c.OnayDurumu == 1
+                                     ? "<span class='badge bg-success'>Onaylandı</span>"
+                                     : (c.OnayDurumu == 2
+                                     ? "<span class='badge bg-danger'>Reddedildi</span>"
+                                     : "<span class='badge bg-warning'>Beklemede</span>")
+                                     )
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

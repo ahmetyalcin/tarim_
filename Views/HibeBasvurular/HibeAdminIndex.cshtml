@@ -1,0 +1,160 @@
+﻿@model List<TarimHibe.Models.AdminHibeBasvuruViewModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewBag.Title = "Admin Ücretsiz Hibe Başvuruları";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var hibeList = (List<SelectListItem>)ViewBag.HibeList;
+    var selectedHibe = (string)ViewBag.SelectedHibe;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <form asp-action="HibeAdminIndex" method="get" class="row g-2 align-items-center">
+                            @Html.AntiForgeryToken()
+                            <div class="col-auto">
+                                @Html.DropDownList(
+                                         "hibeId",
+                                         hibeList.Any()
+                                         ? new SelectList(hibeList, "Value", "Text", selectedHibe)
+                                         : new SelectList(new[] { new { Value = "", Text = "-- Hibe Seçiniz --" } }, "Value", "Text"),
+                                         "-- Hibe Seçiniz --",
+                                         new { @class = "form-select" }
+                                         )
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">Filtrele</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Başvuran</th>
+                                <th>Hibe</th>
+                                <th>Arazi</th>
+                                <th>Başvuru T.</th>
+                                <th>Dekont</th>
+                                <th>Admin Onay</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in Model)
+                            {
+                                <tr>
+                                    <td>@b.BasvuruID</td>
+                                    <td>@b.BasvuranAdi</td>
+                                    <td>@b.HibeTuru</td>
+                                    <td>@b.AraziBilgi</td>
+                                    <td>@b.BasvuruTarihi.ToString("g")</td>
+                                    <td>
+                                        @if (b.UcretliMi)
+                                        {
+                                            if (!string.IsNullOrEmpty(b.DekontYolu))
+                                            {
+                                                <a href="~/uploads/dekont/@b.DekontYolu"
+                                                   target="_blank"
+                                                   class="link-primary">
+                                                    Görüntüle
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-warning">Bekleniyor</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (b.BasvuruDurumu == "Reddedildi")
+                                        {
+                                            <span class="badge bg-danger">Reddedildi</span>
+                                        }
+                                        else if (b.AdminOnay)
+                                        {
+                                            <span class="badge bg-success">Onaylandı</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Bekliyor</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <form asp-action="Approve" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@b.BasvuruID" />
+                                            <button class="btn btn-sm btn-success"
+                                            @(b.AdminOnay || b.BasvuruDurumu == "Reddedildi" ? "disabled" : "")>
+                                                Onayla
+                                            </button>
+                                        </form>
+                                        <button type="button"
+                                                class="btn btn-sm btn-danger ms-1"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#rejectModal"
+                                                data-id="@b.BasvuruID"
+                                        @(b.BasvuruDurumu == "Reddedildi" ? "disabled" : "")>
+                                            Reddet
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- REDDET MODAL -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Reject" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel">Reddetme Nedeni</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="rejectId" />
+                    <div class="mb-3">
+                        <label for="rejectReason" class="form-label">Red Sebebi <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="rejectReason" name="reason" rows="2" required placeholder="Red sebebinizi yazınız..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Reddet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var rejectModal = document.getElementById('rejectModal');
+        rejectModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            rejectModal.querySelector('#rejectId').value = id;
+            rejectModal.querySelector('#rejectReason').value = "";
+        });
+    </script>
+}

@@ -1,0 +1,711 @@
+﻿@model List<TarimHibe.Models.ApiModels.IlceModel>
+@{
+    ViewData["Title"] = "Çiftçi Başvuruları";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var araziList = ViewBag.AraziMulkiyet as List<SelectListItem>;
+    var araziTurList = ViewBag.AraziTurleri as List<SelectListItem>;
+    var araziSulamaList = ViewBag.Arazisulama as List<SelectListItem>;
+    var araziKullanimList = ViewBag.AraziKullanim as List<SelectListItem>;
+  
+}
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512–XQoYMqMTK8LpLeecP01trjM2rgC/Wh9RGrKIqlBxyJ0vEbsP2H3VfF5v5vgR3x9MjZYVOEO0PHDQkh8Wg8IpXA=="
+      crossorigin="" />
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body p-4">
+                <form action="Save" enctype="multipart/form-data" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+
+                    <ul class="nav nav-tabs nav-justified mb-4" id="wizardTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active d-flex align-items-center" id="tab1"
+                               data-toggle="pill" href="#step1" role="tab">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <span>1. Arazi Sorgulama</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center" id="tab2"
+                               data-toggle="pill" href="#step2" role="tab">
+                                <i class="fas fa-map me-2"></i>
+                                <span>2. Arazi Bilgileri</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center" id="tab3"
+                               data-toggle="pill" href="#step3" role="tab">
+                                <i class="fas fa-file-upload me-2"></i>
+                                <span>3. Bilgilerim</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center" id="tab4"
+                               data-toggle="pill" href="#step4" role="tab">
+                                <i class="fas fa-check me-2"></i>
+                                <span>4. Önizleme</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Step 1 -->
+
+                        <div class="tab-pane fade show active" id="step1" role="tabpanel">
+                            <div id="map" style="height:250px;border:1px solid #dee2e6;border-radius:4px;"></div>
+
+                            <div class="form-group row mt-4">
+                                <div class="col-md-6">
+                                    <label for="Ilce">İlçe</label>
+                                    <select id="Ilce" name="Ilce" class="form-control" required>
+                                        <option value="">Seçiniz</option>
+                                        @foreach (var ilce in Model)
+                                        {
+                                            <option value="@ilce.Id">@ilce.IlceAdi</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="Mahalle">Mahalle</label>
+                                    <select name="Mahalle"
+                                            id="Mahalle"
+                                            class="form-control"
+                                            required
+                                            disabled>
+                                        <option value="">Önce İlçe Seçiniz</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mt-3">
+                                <div class="col-md-6">
+                                    <label for="Ada">Ada No</label>
+                                    <input type="text" name="Ada" id="Ada"
+                                           class="form-control"
+                                           placeholder="Ada numarası"
+                                           required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="Parsel">Parsel No</label>
+                                    <input type="text" name="Parsel" id="Parsel"
+                                           class="form-control"
+                                           placeholder="Parsel numarası"
+                                           required />
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-4">
+                                <button type="button"
+                                        class="btn btn-primary next-step">
+                                    Arazi Sorgula
+                                </button>
+                                <button type="button" id="btnIleri" class="btn btn-primary" style="display:none">
+                                    İleri
+                                </button>
+
+                            </div>
+                        </div><!-- end #step1 -->
+
+
+
+                        <!-- Step 2 -->
+                        <div class="tab-pane fade" id="step2" role="tabpanel">
+                            <div class="form-group row">
+                                <div class="col-md-4">
+                                    <label for="Mulkiyet">Mülkiyet</label>
+                                    <select name="MulkiyetId" class="form-select" required>
+                                        <option value="">Seçiniz</option>
+                                        @if (araziList != null)
+                                        {
+                                            foreach (var item in araziList)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="Arazi">Arazi Türleri</label>
+                                    <select name="AraziTurId" class="form-select" required>
+                                        <option value="">Seçiniz</option>
+                                        @if (araziTurList != null)
+                                        {
+                                            foreach (var item in araziTurList)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+                                            }
+                                        }
+                                    </select>
+
+
+                                    
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="Sulama">Sulama</label>
+                                    <select name="AraziSulamaId" class="form-select" required>
+                                        <option value="">Seçiniz</option>
+                                        @if (araziSulamaList != null)
+                                        {
+                                            foreach (var item in araziSulamaList)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-4">
+                                    <label for="KullanimSekli">Kullanım Şekli</label>
+                                    <select name="AraziKullanimId" class="form-select" required>
+                                        <option value=""> Seçiniz</option>
+                                        @if (araziKullanimList != null)
+                                        {
+                                            foreach (var item in araziKullanimList)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="Mevkii">Mevkii</label>
+                                    <input type="text" name="Mevkii" id="Mevkii" class="form-control" placeholder="Mevkii bilgisi" />
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="ToplamAlan">Toplam Alan (da)</label>
+                                    <input type="number" name="ToplamAlan" id="ToplamAlan" class="form-control" step="0.01" required />
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="HisseAlan">Hisse Alan (da)</label>
+                                    <input type="number" name="HisseAlan" id="HisseAlan" class="form-control" step="0.01" required />
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-4">
+                                <button type="button" class="btn btn-secondary prev-step me-2">Geri</button>
+                                <button type="button" class="btn btn-primary next-step">Devam Et</button>
+                            </div>
+                        </div>
+
+
+                        <!-- Step 3 -->
+                    <div class="tab-pane fade" id="step3" role="tabpanel">
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="TCNo">TC Kimlik No</label>
+                                <input type="text" name="TCNo" id="TCNo" class="form-control" 
+                                       maxlength="11" placeholder="11 haneli TC" 
+                                       value="@Context.Session.GetString("TcKimlikNo")" 
+                                       readonly required />
+                                <small class="text-muted">Bu bilgi sistem tarafından otomatik doldurulmuştur.</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="DogumTarihi">Doğum Tarihi</label>
+                                <input type="date" name="DogumTarihi" id="DogumTarihi" class="form-control" 
+                                       value="@ViewBag.DogumTarihi" readonly required />
+                                <small class="text-muted">Bu bilgi sistem tarafından otomatik doldurulmuştur.</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="AdSoyad">Ad Soyad</label>
+                                <input type="text" name="AdSoyad" id="AdSoyad" class="form-control" 
+                                       value="@Context.Session.GetString("AdSoyad")" 
+                                       readonly required />
+                                <small class="text-muted">Bu bilgi sistem tarafından otomatik doldurulmuştur.</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="UretimYili">Üretim Yılı</label>
+                                    <select name="UretimYili" id="UretimYili" class="form-control" required>
+                                        @{
+                                            for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 25; y--)
+                                            {
+                                                if (y == DateTime.Now.Year)
+                                                {
+                                                    <option value="@y" selected="selected">@y</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@y">@y</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="button" class="btn btn-secondary prev-step me-2">Geri</button>
+                            <button type="button" class="btn btn-primary next-step">Devam Et</button>
+                        </div>
+                    </div>
+
+                        <!-- Step 4 -->
+                        <div class="tab-pane fade" id="step4" role="tabpanel">
+                            <input type="hidden" name="IlceAdi" id="hidden-ilce" value="@ViewBag.IlceAdi" />
+                            <input type="hidden" name="MahalleAdi" id="hidden-mahalle" value="@ViewBag.MahalleAdi" />
+
+                            <h5 class="mb-4">Önizleme</h5>
+
+                            <div class="preview-section mb-4">
+                                <h6 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Arazi Konum Bilgileri
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">İlçe</p>
+                                        <p class="fw-bold" name="preview-ilce" id="preview-ilce"></p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Mahalle</p>
+                                        <p class="fw-bold" name="preview-mahalle" id="preview-mahalle"></p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Ada No</p>
+                                        <p class="fw-bold" id="preview-ada"></p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Parsel No</p>
+                                        <p class="fw-bold" id="preview-parsel"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="preview-section mb-4">
+                                <h6 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-map me-2"></i>Arazi Detay Bilgileri
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Mülkiyet</p>
+                                        <p class="fw-bold" id="preview-mulkiyet">-</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Arazi Türü</p>
+                                        <p class="fw-bold" id="preview-arazi-turu">-</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Sulama</p>
+                                        <p class="fw-bold" id="preview-sulama">-</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Kullanım Şekli</p>
+                                        <p class="fw-bold" id="preview-kullanim">-</p>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Mevkii</p>
+                                        <p class="fw-bold" id="preview-mevkii">-</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Toplam Alan (da)</p>
+                                        <p class="fw-bold" id="preview-toplam-alan">-</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Hisse Alan (da)</p>
+                                        <p class="fw-bold" id="preview-hisse-alan">-</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Parsel</p>
+                                        <p class="fw-bold" id="preview-parsel">-</p>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="preview-section">
+                                <h6 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-user me-2"></i>Kişisel Bilgiler
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">TC Kimlik No</p>
+                                        <p class="fw-bold" id="preview-tc"></p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Ad Soyad</p>
+                                        <p class="fw-bold" id="preview-ad-soyad"></p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Doğum Tarihi</p>
+                                        <p class="fw-bold" id="preview-dogum"></p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-1 text-muted">Üretim Yılı</p>
+                                        <p class="fw-bold" id="preview-uretim-yili"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-4">
+                                <button type="button" class="btn btn-secondary prev-step me-2">Geri</button>
+                                <button type="submit" class="btn btn-primary">Kaydet</button>
+                            </div>
+                        </div>
+                  
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<style>
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        margin-right: 2px;
+    }
+
+        .nav-tabs .nav-link.active {
+            background-color: #0c768a;
+            color: white;
+            border-color: #0c768a;
+        }
+
+        .nav-tabs .nav-link i {
+            font-size: 0.875rem;
+            margin-right: 0.5rem;
+        }
+
+    .btn-primary {
+        background-color: #0c768a;
+        border-color: #0c768a;
+    }
+
+        .btn-primary:hover {
+            background-color: #0a6577;
+            border-color: #0a6577;
+        }
+
+    .form-control:focus {
+        border-color: #0c768a;
+        box-shadow: 0 0 0 0.2rem rgba(12, 118, 138, 0.25);
+    }
+
+    .map-container {
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid #dee2e6;
+        margin: 1rem 0 2rem;
+    }
+
+    .file-upload-area {
+        border: 2px dashed #dee2e6;
+        padding: 2rem;
+        border-radius: 6px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .file-upload-area:hover {
+            background-color: #e9ecef;
+            border-color: #0c768a;
+        }
+
+    .file-input {
+        display: none;
+    }
+
+    .preview-section {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 6px;
+    }
+
+        .preview-section h6 {
+            color: #0c768a;
+        }
+
+    .badge-primary {
+        background-color: #0c768a;
+    }
+
+    .text-primary {
+        color: #0c768a !important;
+    }
+
+    .me-2 {
+        margin-right: 0.5rem !important;
+    }
+
+    .fw-bold {
+        font-weight: 600 !important;
+    }
+</style>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Proj4js for coordinate transforms -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.js"></script>
+<!-- (proj4leaflet artık gerek kalmadı, çünkü direkt proj4 dönüştürüyoruz) -->
+@section Scripts {
+    <script>
+        $(function() {
+
+        var satellite = L.tileLayer(
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+            maxZoom: 18
+          }
+        );
+
+        // 2) Map'i satellite ile oluştur
+        var map = L.map('map', {
+          center: [38.4175, 27.1423],
+          zoom: 5,
+          attributionControl: false,
+          layers: [ satellite ]   // burada ekledik
+        });
+
+
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OSM', maxZoom:5 });
+        L.control.layers({ 'Harita': osm, 'Uydu': satellite }).addTo(map);
+
+
+
+             L.control.attribution({
+          position: 'bottomright',
+          prefix: ''   // prefix = '' → “Leaflet |” kısmı gelmez
+        })
+        .addAttribution('Tarımsal Hizmetler Dairesi Başkanlığı')
+        .addTo(map);
+
+        // 3) layerGroup hâlâ çalışır
+        var layerGroup = L.layerGroup().addTo(map);
+
+          // 2) UTM Zone 35N (WGS84) tanımı
+          proj4.defs("EPSG:32635","+proj=utm +zone=35 +datum=WGS84 +units=m +no_defs");
+
+          // 3) İlçe seçilince mahalleleri getir
+          $('#Ilce').on('change', function(){
+            var ilceId = $(this).val();
+            var mh = $('#Mahalle')
+              .prop('disabled', true)
+              .html('<option>Önce İlçe Seçiniz</option>');
+            if (!ilceId) return;
+            $.getJSON('@Url.Action("MahalleGetir", "Arazi")', { ilceId: ilceId })
+              .done(function(data){
+                mh.empty().prop('disabled', false)
+                  .append('<option value="">Seçiniz</option>');
+                data.forEach(function(item){
+                  mh.append(`<option value="${item.mahalleKodu}">${item.mahalleAdi}</option>`);
+                });
+              });
+          });
+
+               $('#btnSorgula, .next-step').on('click', function(){
+            var pane = $(this).closest('.tab-pane').attr('id');
+            if (pane !== 'step1') return;
+
+            var ilce    = $('#Ilce').val(),
+                mahalle = $('#Mahalle').val(),
+                ada     = $('#Ada').val(),
+                parsel  = $('#Parsel').val();
+            if (!ilce || !mahalle || !ada || !parsel) {
+              toastr.error('Lütfen tüm alanları doldurun.');
+              return;
+            }
+
+            $.post(
+              '@Url.Action("AraziSorgula", "Arazi")',
+              { ilce: ilce, mahalle: mahalle, ada: ada, parsel: parsel },
+              function(res){
+                if (res.error) {
+                   alert("Bu ada-parsel-mahalle kombinasyonu zaten kayıtlıdır.");
+                 // toastr.error(res.error);
+                  $('#btnIleri').hide();
+                  return;
+                }
+
+                // 5) UTM35N → lat/lng çevir
+                var latlngs = res.data.map(function(pt){
+                  // pt = [Easting, Northing]
+                  var ll = proj4("EPSG:32635","EPSG:4326", pt);
+                  return [ ll[1], ll[0] ];  // [lat, lng]
+                });
+
+                // 6) Polygon çiz
+                layerGroup.clearLayers();
+                var poly = L.polygon(latlngs, { color: 'red', weight: 4 }).addTo(layerGroup);
+                 map.fitBounds(poly.getBounds(), { maxZoom: 19, padding: [30, 30] });
+              //  map.fitBounds(poly.getBounds());
+                  $('#btnIleri').show();
+                // (İstersen 2. sekmeye geçiş)
+                // $('#wizardTabs a[href="#step2"]').tab('show');
+              },
+              'json'
+            );
+          });
+
+               $('#btnIleri').on('click', function(){
+          $('#wizardTabs a[href="#step2"]').tab('show');
+        });
+
+            // Tab navigation
+            $('.next-step').click(function() {
+                var currentTab = $(this).closest('.tab-pane');
+                var nextTab = currentTab.next('.tab-pane');
+
+                if (currentTab.attr('id') === 'step1') {
+                    // Arazi sorgulama işlemi
+                    var ilce = $('#Ilce').val();
+                    var mahalle = $('#Mahalle').val();
+                    var ada = $('#Ada').val();
+                    var parsel = $('#Parsel').val();
+
+                    if (!ilce || !mahalle || !ada || !parsel) {
+                        alert('Lütfen tüm alanları doldurunuz');
+                        return;
+                    }
+
+                } else if (validateTab(currentTab)) {
+                    $('#wizardTabs a[href="#' + nextTab.attr('id') + '"]').tab('show');
+                    updatePreview();
+                }
+            });
+
+            $('.prev-step').click(function() {
+                var currentTab = $(this).closest('.tab-pane');
+                var prevTab = currentTab.prev('.tab-pane');
+                $('#wizardTabs a[href="#' + prevTab.attr('id') + '"]').tab('show');
+            });
+
+            // Form validation
+            function validateTab($tab) {
+                var isValid = true;
+                $tab.find('input[required], select[required]').each(function() {
+                    if (!$(this).val()) {
+                        $(this).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+                return isValid;
+            }
+
+            // File upload handling
+            $('.file-upload-area').click(function() {
+                $('#CksBelgesi').click();
+            });
+
+            $('#CksBelgesi').change(function(e) {
+                e.stopPropagation();
+                if (this.files && this.files[0]) {
+                    var fileName = this.files[0].name;
+                    $('#selected-file').removeClass('d-none')
+                        .find('.badge').text(fileName);
+                }
+            });
+            /*
+            // Preview updates
+            function updatePreview() {
+                $('#preview-ilce').text($('#Ilce').val());
+                $('#preview-mahalle').text($('#Mahalle').val());
+                $('#preview-ada').text($('#Ada').val());
+                $('#preview-parsel').text($('#Parsel').val());
+                $('#preview-mulkiyet').text($('#Mulkiyet').val());
+                $('#preview-arazi-turu').text($('#AraziTuru').val());
+                $('#preview-sulama').text($('#Sulama').val());
+                $('#preview-kullanim').text($('#KullanimSekli').val());
+                $('#preview-mevkii').text($('#Mevkii').val() || '-');
+                $('#preview-toplam-alan').text($('#ToplamAlan').val());
+                $('#preview-hisse-alan').text($('#HisseAlan').val());
+                $('#preview-tc').text($('#TCNo').val());
+                $('#preview-dogum').text($('#DogumTarihi').val());
+                $('#preview-uretim-yili').text($('#UretimYili').val());
+                $('#preview-belge').text($('#CksBelgesi')[0].files[0]?.name || '-');
+            }
+
+*/
+            function updatePreview() {
+                /*
+            $('#hidden-ilce').val($('#Ilce option:selected').text());
+            $('#hidden-mahalle').val($('#Mahalle option:selected').text());
+            $('#preview-ilce').text($('#Ilce option:selected').text());
+            $('#preview-mahalle').text($('#Mahalle option:selected').text());
+            $('#preview-ada').text($('#Ada').val());
+            $('#preview-parsel').text($('#Parsel').val());
+            $('#preview-mulkiyet').text($('select[name="MulkiyetId"] option:selected').text());
+            $('#preview-arazi-turu').text($('select[name="AraziTurId"] option:selected').text());
+            $('#preview-sulama').text($('select[name="AraziSulamaId"] option:selected').text());
+            $('#preview-kullanim').text($('select[name="AraziKullanimId"] option:selected').text());
+            $('#preview-mevkii').text($('#Mevkii').val() || '-');
+            $('#preview-toplam-alan').text($('#ToplamAlan').val());
+            $('#preview-hisse-alan').text($('#HisseAlan').val());
+            $('#preview-tc').text($('#TCNo').val());
+            $('#preview-dogum').text($('#DogumTarihi').val());
+            $('#preview-uretim-yili').text($('#UretimYili option:selected').text());
+            $('#preview-belge').text($('#CksBelgesi')[0].files[0]?.name || '-');
+            */
+
+             $('#hidden-ilce').val($('#Ilce option:selected').text());
+            $('#hidden-mahalle').val($('#Mahalle option:selected').text());
+            $('#preview-ilce').text($('#Ilce option:selected').text());
+            $('#preview-mahalle').text($('#Mahalle option:selected').text());
+            $('#preview-ada').text($('#Ada').val());
+            $('#preview-parsel').text($('#Parsel').val());
+            $('#preview-mulkiyet').text($('select[name="MulkiyetId"] option:selected').text());
+            $('#preview-arazi-turu').text($('select[name="AraziTurId"] option:selected').text());
+            $('#preview-sulama').text($('select[name="AraziSulamaId"] option:selected').text());
+            $('#preview-kullanim').text($('select[name="AraziKullanimId"] option:selected').text());
+            $('#preview-mevkii').text($('#Mevkii').val() || '-');
+            $('#preview-toplam-alan').text($('#ToplamAlan').val());
+            $('#preview-hisse-alan').text($('#HisseAlan').val());
+
+            // Kullanıcı bilgileri - otomatik doldurulmuş alanlardan
+            $('#preview-tc').text($('#TCNo').val());
+            $('#preview-ad-soyad').text($('#AdSoyad').val());
+            $('#preview-dogum').text($('#DogumTarihi').val());
+            $('#preview-uretim-yili').text($('#UretimYili option:selected').text());
+            $('#preview-belge').text($('#CksBelgesi')[0].files[0]?.name || '-');
+
+
+        }
+
+            // Drag and drop handling
+            $('.file-upload-area').on({
+                dragover: function(e) {
+                    e.preventDefault();
+                    $(this).addClass('bg-light');
+                },
+                dragleave: function(e) {
+                    e.preventDefault();
+                    $(this).removeClass('bg-light');
+                },
+                drop: function(e) {
+                    e.preventDefault();
+                    $(this).removeClass('bg-light');
+
+                    var file = e.originalEvent.dataTransfer.files[0];
+                    $('#CksBelgesi')[0].files = e.originalEvent.dataTransfer.files;
+
+                    if (file) {
+                        $('#selected-file').removeClass('d-none')
+                            .find('.badge').text(file.name);
+                    }
+                }
+            });
+        });
+    </script>
+
+
+}

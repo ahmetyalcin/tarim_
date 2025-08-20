@@ -1,0 +1,46 @@
+﻿@model IEnumerable<TarimHibe.Models.MenuItem>
+
+@* Helper: DB’den gelen link’i normalize edip controller ve action’a ayırıyoruz *@
+@functions {
+    (string controller, string action) ParseLink(string link)
+    {
+        if (string.IsNullOrWhiteSpace(link))
+            return ("Dashboard", "Index");
+        // baştaki ../, ~/ veya / işaretlerini temizle
+        var trimmed = link.TrimStart('~', '/', '.');
+        var parts = trimmed.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var ctrl = parts[0];
+        var act = parts.Length > 1 ? parts[1] : "Index";
+        return (ctrl, act);
+    }
+}
+
+@foreach (var item in Model)
+{
+    var (ctrl, act) = ParseLink(item.Link);
+
+    if (item.Children != null && item.Children.Any())
+    {
+        <li>
+            <a href="javascript:void(0);" class="has-arrow waves-effect">
+                <i class="@item.Icon"></i>
+                <span>@item.Name</span>
+            </a>
+            <ul class="sub-menu" aria-expanded="false">
+                @* Alt menüler için recursive partial çağırıyoruz *@
+                @await Html.PartialAsync("_Menu", item.Children)
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li>
+            <a asp-controller="@ctrl"
+               asp-action="@act"
+               class="waves-effect">
+                <i class="@item.Icon"></i>
+                <span>@item.Name</span>
+            </a>
+        </li>
+    }
+}

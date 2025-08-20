@@ -1,0 +1,157 @@
+﻿@model TarimHibe.Models.AdminDashboardViewModel
+@{
+    ViewBag.Title = "Kullanıcı Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Greeting -->
+    <h2 class="mb-4">Hoş geldiniz, @ViewBag.AdSoyad!</h2>
+
+    <!-- Özet Kartlar -->
+    <div class="row g-4 mb-4">
+        <!-- Kullanıcı -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="avatar-md flex-shrink-0">
+                        <span class="avatar-title bg-subtle-primary text-primary rounded fs-2">
+                            <i class="fas fa-users"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden ms-4">
+                        <p class="text-uppercase text-secondary small mb-1">Kullanıcı</p>
+                        <h3 class="fw-bold mb-0">@Model.ToplamKullanici</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Hibe Başvuru -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="avatar-md flex-shrink-0">
+                        <span class="avatar-title bg-subtle-success text-success rounded fs-2">
+                            <i class="fas fa-file-alt"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden ms-4">
+                        <p class="text-uppercase text-secondary small mb-1">Hibe Başvuru</p>
+                        <h3 class="fw-bold mb-0">@Model.ToplamHibeBasvuru</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Arazi -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="avatar-md flex-shrink-0">
+                        <span class="avatar-title bg-subtle-warning text-warning rounded fs-2">
+                            <i class="fas fa-seedling"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden ms-4">
+                        <p class="text-uppercase text-secondary small mb-1">Arazi</p>
+                        <h3 class="fw-bold mb-0">@Model.ToplamArazi</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Hayvan -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="avatar-md flex-shrink-0">
+                        <span class="avatar-title bg-subtle-info text-info rounded fs-2">
+                            <i class="fas fa-paw"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden ms-4">
+                        <p class="text-uppercase text-secondary small mb-1">Hayvan</p>
+                        <h3 class="fw-bold mb-0">@Model.ToplamHayvan</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Ekipman -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="avatar-md flex-shrink-0">
+                        <span class="avatar-title bg-subtle-danger text-danger rounded fs-2">
+                            <i class="fas fa-wrench"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden ms-4">
+                        <p class="text-uppercase text-secondary small mb-1">Ekipman</p>
+                        <h3 class="fw-bold mb-0">@Model.ToplamEkipman</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- En Çok Başvuru Alan Hibe -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="avatar-md flex-shrink-0">
+                        <span class="avatar-title bg-subtle-primary text-primary rounded fs-2">
+                            <i class="fas fa-chart-line"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden ms-4">
+                        <p class="text-uppercase text-secondary small mb-1">En Çok Başvuru</p>
+                        <h5 class="fw-bold mb-0">@Model.EnCokBasvuruHibeAdi</h5>
+                        <small class="text-muted">@Model.EnCokBasvuruAdedi başvuru</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Son 10 Kayıtlı Çiftçi -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Son 10 Kayıtlı Çiftçi</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Son10Ciftci != null && Model.Son10Ciftci.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Ad Soyad</th>
+                                <th>Email</th>
+                                <th>Kayıt Tarihi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Son10Ciftci.Count; i++)
+                            {
+                                var c = Model.Son10Ciftci[i];
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@c.AdSoyad</td>
+                                    <td>@c.Email</td>
+                                    <td>@c.KayitTarihi.ToString("dd.MM.yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-secondary m-3 mb-0">
+                    Gösterilecek çiftçi bulunamadı.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/fontawesome/js/all.min.js"></script>
+}

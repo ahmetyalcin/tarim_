@@ -1,0 +1,346 @@
+﻿@model List<TarimHibe.Models.ApiModels.IlceModel>
+@{
+    ViewBag.Title = "Hayvan Düzenle";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var hayvan = ViewBag.Hayvan as TarimHibe.Models.Hayvanlarim;
+    var secilenMahalle = hayvan.Mahalle;
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Hayvan Kaydını Düzenle</h4>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <form id="hayvanForm" method="post" action="@Url.Action("Edit", "Hayvanlarim")">
+                      @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" value="@hayvan.Id" />
+                    <input type="hidden" name="UserID" value="@hayvan.UserID" />
+                    <input type="hidden" name="KayitTarihi" value="@hayvan.KayitTarihi" />
+                    <input type="hidden" name="Durum" value="@hayvan.Durum" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hayvan Türü Grubu</label>
+                                <select id="grupSelect" name="HayGrupID" class="form-select" required>
+                                    <option value="">Grup Seçiniz</option>
+                                    @foreach (var item in ViewBag.HayvanTuruGruplari)
+                                    {
+                                        var selected = item.Selected ? "selected=\"selected\"" : "";
+                                        @:<option value="@item.Value" @Html.Raw(selected)>@item.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hayvan Alt Grubu</label>
+                                <select id="altGrupSelect" name="HayAltGrupID" class="form-select" required>
+                                    <option value="">Alt Grup Seçiniz</option>
+                                    @foreach (var item in ViewBag.HayvanAltGruplari)
+                                    {
+                                        var selected = item.Selected ? "selected=\"selected\"" : "";
+                                        @:<option value="@item.Value" @Html.Raw(selected)>@item.Text</option>
+
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hayvan Türü</label>
+                                <select id="turSelect" name="HayTurID" class="form-select" required>
+                                    <option value="">Tür Seçiniz</option>
+                                    @foreach (var item in ViewBag.HayvanTurleri)
+                                    {
+                                        var selected = item.Selected ? "selected=\"selected\"" : "";
+                                        @:<option value="@item.Value" @Html.Raw(selected)>@item.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="Adet">Adet</label>
+                                <input type="number" class="form-control" id="Adet" name="Adet" required min="1" value="@hayvan.Adet">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">İlçe</label>
+                                <select id="ilceSelect" name="Ilce" class="form-select" required>
+                                    <option value="">İlçe Seçiniz</option>
+                                    @foreach (var item in Model)
+                                    {
+                                            var selectedAttr = item.Id.ToString() == hayvan.Ilce ? "selected=\"selected\"" : "";
+                                            @:<option value="@item.Id" @Html.Raw(selectedAttr)>@item.IlceAdi</option>
+
+
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Mahalle</label>
+                                <input type="hidden" id="secilenMahalle" value="@hayvan.Mahalle" />
+                                <select id="mahalleSelect" name="Mahalle" class="form-select" required>
+                                    <option value="">Mahalle Seçiniz111</option>
+                          
+                                @if (ViewBag.Mahalleler != null)
+                                {
+                                    foreach (var mahalle in ViewBag.Mahalleler)
+                                    {
+                                        var selectedAttr = mahalle.MahalleKodu == secilenMahalle ? "selected=\"selected\"" : "";
+                                        @:<option value="@mahalle.MahalleKodu" @Html.Raw(selectedAttr)>@mahalle.MahalleAdi</option>
+                                    }
+                                }
+
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="@Url.Action("Index", "Hayvanlarim")" class="btn btn-secondary">İptal</a>
+                                <button type="submit" class="btn btn-primary">Güncelle</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/assets/js/app.js"></script>
+    <script>
+        $(document).ready(function () {
+
+
+
+            // Hayvan Türü Grubu değiştiğinde
+            $('#grupSelect').change(function () {
+
+                var grupId = $(this).val();
+                var altGrupSelect = $('#altGrupSelect');
+                var turSelect = $('#turSelect');
+
+                // Alt grup ve tür seçimlerini sıfırla
+                altGrupSelect.prop('disabled', true).empty().append($('<option>', {
+                    value: '',
+                    text: 'Önce Grup Seçiniz'
+                }));
+
+                turSelect.prop('disabled', true).empty().append($('<option>', {
+                    value: '',
+                    text: 'Önce Alt Grup Seçiniz'
+                }));
+
+                if (!grupId) return;
+
+                // Alt grupları yükle
+                $.ajax({
+                    url: '@Url.Action("GetHayvanAltGruplari", "Hayvanlarim")?grupId=' + grupId,
+                    type: 'GET',
+                    success: function (data) {
+                        if (data.error) {
+                            toastr.error(data.error);
+                            return;
+                        }
+
+                        altGrupSelect.prop('disabled', false);
+                        altGrupSelect.empty().append($('<option>', {
+                            value: '',
+                            text: 'Alt Grup Seçiniz'
+                        }));
+
+                        $.each(data, function (i, item) {
+                            altGrupSelect.append($('<option>', {
+                                value: item.id,
+                                text: item.text
+                            }));
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Alt gruplar yüklenirken bir hata oluştu: " + error);
+                    }
+                });
+            });
+
+            // Hayvan Alt Grubu değiştiğinde
+            $('#altGrupSelect').change(function () {
+                var altGrupId = $(this).val();
+                var turSelect = $('#turSelect');
+
+                turSelect.prop('disabled', true).empty().append($('<option>', {
+                    value: '',
+                    text: 'Önce Alt Grup Seçiniz'
+                }));
+
+                if (!altGrupId) return;
+
+                // Türleri yükle
+                $.ajax({
+                    url: '@Url.Action("GetHayvanTurleri", "Hayvanlarim")?altGrupId=' + altGrupId,
+                    type: 'GET',
+                    success: function (data) {
+                        if (data.error) {
+                            toastr.error(data.error);
+                            return;
+                        }
+
+                        turSelect.prop('disabled', false);
+                        turSelect.empty().append($('<option>', {
+                            value: '',
+                            text: 'Tür Seçiniz'
+                        }));
+
+                        $.each(data, function (i, item) {
+                            turSelect.append($('<option>', {
+                                value: item.id,
+                                text: item.text
+                            }));
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Türler yüklenirken bir hata oluştu: " + error);
+                    }
+                });
+            });
+
+    // İlçe değiştiğinde
+$('#ilceSelect').change(function () {
+    var ilceId = $(this).val();
+    var mahalleSelect = $('#mahalleSelect');
+    var secilenMahalle = $('#secilenMahalle').val();
+
+    mahalleSelect.prop('disabled', true).empty().append($('<option>', {
+        value: '',
+        text: 'Önce İlçe Seçiniz'
+    }));
+    if (!ilceId) return;
+
+    $.ajax({
+        url: '@Url.Action("GetMahalleler", "Hayvanlarim")?ilceId=' + ilceId,
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            if (data.error) {
+                toastr.error(data.error);
+                return;
+            }
+
+            mahalleSelect.prop('disabled', false);
+            mahalleSelect.empty().append($('<option>', {
+                value: '',
+                text: 'Mahalle Seçiniz'
+            }));
+
+            $.each(data, function (i, item) {
+                const isSelected = item.mahalleKodu.toString() === secilenMahalle.toString();
+                mahalleSelect.append($('<option>', {
+                    value: item.mahalleKodu,
+                    text: item.mahalleAdi,
+                    selected: isSelected
+                }));
+            });
+        },
+        error: function (xhr, status, error) {
+            toastr.error("Mahalleler yüklenirken bir hata oluştu: " + error);
+        }
+    });
+});
+
+ $('#ilceSelect').change(function () {
+                var ilceId = $(this).val();
+                var mahalleSelect = $('#mahalleSelect');
+
+                mahalleSelect.prop('disabled', true).empty().append($('<option>', {
+                    value: '',
+                    text: 'Önce İlçe Seçiniz'
+                }));
+
+                if (!ilceId) return;
+
+                $.ajax({
+                    url: '@Url.Action("GetMahalleler", "Hayvanlarim")?ilceId=' + ilceId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.error) {
+                            toastr.error(data.error);
+                            return;
+                        }
+
+                        mahalleSelect.prop('disabled', false);
+                        mahalleSelect.empty().append($('<option>', {
+                            value: '',
+                            text: 'Mahalle Seçiniz'
+                        }));
+
+                        $.each(data, function (i, item) {
+                            mahalleSelect.append($('<option>', {
+                                value: item.mahalleKodu,
+                                text: item.mahalleAdi,
+                                selected: isSelected
+                            }));
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Mahalleler yüklenirken bir hata oluştu: " + error);
+                    }
+                });
+            });
+
+
+        // Form validation
+            $('#hayvanForm').submit(function (e) {
+                var grup = $('#grupSelect').val();
+                var altGrup = $('#altGrupSelect').val();
+                var tur = $('#turSelect').val();
+                var ilce = $('#ilceSelect').val();
+                var mahalle = $('#mahalleSelect').val();
+                var adet = $('#Adet').val();
+
+                if (!grup || !altGrup || !tur || !ilce || !mahalle || !adet) {
+                    e.preventDefault();
+                    toastr.error('Lütfen tüm zorunlu alanları doldurunuz.');
+                    return false;
+                }
+            });
+
+       
+        });
+    </script>
+}

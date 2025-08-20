@@ -1,0 +1,96 @@
+﻿@model TarimHibe.Models.ProfileViewModel
+@{
+    ViewBag.Title = "Profilim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    // Hangi tab aktif olacak
+    bool pwdError = ViewData.ModelState.ContainsKey(nameof(Model.CurrentPassword))
+                  || ViewData.ModelState.ContainsKey(nameof(Model.NewPassword))
+                  || ViewData.ModelState.ContainsKey(nameof(Model.ConfirmPassword));
+}
+
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+<div class="container-fluid py-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="profileTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link @(pwdError?"":"active")" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">Bilgilerim</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link @(pwdError?"active":"")" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab">Şifre Değiştir</button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            <div class="tab-content" id="profileTabsContent">
+                <!-- Bilgilerim Sekmesi -->
+                <div class="tab-pane fade @(pwdError?"":"show active") p-3" id="info" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ad</label>
+                            <input class="form-control" value="@Model.Ad" readonly />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Soyad</label>
+                            <input class="form-control" value="@Model.Soyad" readonly />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Telefon</label>
+                            <input class="form-control" value="@Model.Telefon" readonly />
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">E-posta</label>
+                            <input class="form-control" value="@Model.Email" readonly />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">İl</label>
+                            <input class="form-control" value="@Model.Il" readonly />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">İlçe</label>
+                            <input class="form-control" value="@Model.Ilce" readonly />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Mahalle</label>
+                            <input class="form-control" value="@Model.Mahalle" readonly />
+                        </div>
+                    </div>
+                </div>
+                <!-- Şifre Değiştir Sekmesi -->
+                <div class="tab-pane fade @(pwdError?"show active":"") p-3" id="password" role="tabpanel">
+                    @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "row g-3" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="col-12">
+                            @Html.LabelFor(m => m.CurrentPassword, htmlAttributes: new { @class = "form-label" })
+                            @Html.PasswordFor(m => m.CurrentPassword, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.CurrentPassword, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6">
+                            @Html.LabelFor(m => m.NewPassword, htmlAttributes: new { @class = "form-label" })
+                            @Html.PasswordFor(m => m.NewPassword, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.NewPassword, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6">
+                            @Html.LabelFor(m => m.ConfirmPassword, htmlAttributes: new { @class = "form-label" })
+                            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-warning">Şifreyi Güncelle</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+}

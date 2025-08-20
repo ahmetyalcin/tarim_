@@ -1,0 +1,113 @@
+﻿@model List<TarimHibe.Models.BasvuruViewModel>
+@{
+    ViewBag.Title = "Hibelerim";
+    bool? filter = ViewBag.FilterYayinda as bool?;
+}
+
+<div class="container-fluid py-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">Hibelerim</h5>
+                <small class="text-muted">Yaptığınız başvuruların listesi</small>
+            </div>
+            <nav class="btn-group btn-group-sm">
+                <a asp-action="Index" asp-route-yayinda=""
+                   class="btn @(filter==null ? "btn-primary" : "btn-outline-primary")">
+                    Tümü
+                </a>
+                <a asp-action="Index" asp-route-yayinda="true"
+                   class="btn @(filter==true ? "btn-primary" : "btn-outline-success")">
+                    Aktif
+                </a>
+                <a asp-action="Index" asp-route-yayinda="false"
+                   class="btn @(filter==false ? "btn-primary" : "btn-outline-danger")">
+                    Pasif
+                </a>
+            </nav>
+        </div>
+        <div class="card-body">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+
+            <div class="table-responsive">
+                <table id="basvuruTable" class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Hibe Türü</th>
+                            <th>Arazi Bilgi</th>
+                            <th>Başvuru Tarihi</th>
+                            <th>Onay Durumu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model)
+                        {
+                            <tr>
+                                <td>@b.BasvuruID</td>
+                                <td>@b.HibeTuru</td>
+                                <td>@b.AraziBilgi</td>
+                                <td>@b.BasvuruTarihi.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    @{
+                                        string text, css;
+                                        switch (b.BasvuruDurumu)
+                                        {
+                                            case "Onaylandı":
+                                                text = "Onaylandı";
+                                                css = "bg-success";
+                                                break;
+                                            case "Reddedildi":
+                                                text = "Reddedildi";
+                                                css = "bg-danger";
+                                                break;
+                                            default:
+                                                text = "Beklemede";
+                                                css = "bg-secondary";
+                                                break;
+                                        }
+                                    }
+                                    <span class="badge @css">@text</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function(){
+          $('#basvuruTable').DataTable({
+            paging: true,
+            pageLength: 10,
+            ordering: true,
+            lengthChange: false,
+            language: {
+              search:      "Ara:",
+              emptyTable:  "Gösterilecek kayıt yok",
+              info:        "_TOTAL_ kayıttan _START_–_END_ arası",
+              paginate: {
+                first:    "İlk",
+                last:     "Son",
+                next:     "→",
+                previous: "←"
+              }
+            },
+            columnDefs: [
+              { orderable: false, targets: 4 } // "Onay Durumu" sıralanmasın
+            ]
+          });
+        });
+    </script>
+}

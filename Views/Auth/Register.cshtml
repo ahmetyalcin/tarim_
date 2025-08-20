@@ -1,0 +1,210 @@
+﻿@model TarimHibe.Models.RegisterViewModel
+@{
+    Layout = "_BlankLayout";
+    ViewBag.Title = "Kayıt Ol";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #e6f0f5;
+        }
+
+        .card-register {
+            max-width: 900px;
+            border: none;
+            border-radius: .75rem;
+            overflow: hidden;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        }
+            /* Soldaki görsel konteyneri hizalanacak ahmet */
+            .card-register .left {
+                background-color: #f9fafb;
+                display: flex;
+                align-items: flex-start; /* <-- burayı değiştirdik ahmet */
+                justify-content: center;
+            }
+
+                .card-register .left img {
+                    max-width: 100%;
+                    height: auto;
+                }
+
+            .card-register .right {
+                background-color: #fff;
+                padding: 2.5rem;
+            }
+    </style>
+}
+
+<div class="auth-maintenance container-fluid min-vh-100 d-flex align-items-center justify-content-center py-5">
+    <div class="card card-register">
+        <div class="row g-0">
+            <!-- soldaki bölüm -->
+            <div class="col-md-6 left">
+                <img src="~/images/bg_reg.png" alt="" />
+            </div>
+            <!-- sağdaki form -->
+            <div class="col-md-6 right">
+                <h3 class="text-center mb-4">Üretici Destekleme Kayıt</h3>
+
+                @* Hata mesajlarını göster *@
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @* Başarı mesajlarını göster *@
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "needs-validation", novalidate = "" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.TcKimlikNo)
+                        @Html.TextBoxFor(m => m.TcKimlikNo, new { @class = "form-control", placeholder = "11 haneli TC Kimlik" })
+                        @Html.ValidationMessageFor(m => m.TcKimlikNo, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.DogumTarihi)
+                        @Html.TextBoxFor(
+                                 m => m.DogumTarihi,
+                                 "{0:yyyy-MM-dd}",
+                                 new { type = "date", @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.DogumTarihi, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.Ad)
+                            @Html.TextBoxFor(m => m.Ad, new { @class = "form-control", placeholder = "Adınız" })
+                            @Html.ValidationMessageFor(m => m.Ad, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.Soyad)
+                            @Html.TextBoxFor(m => m.Soyad, new { @class = "form-control", placeholder = "Soyadınız" })
+                            @Html.ValidationMessageFor(m => m.Soyad, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.Telefon)
+                        <input asp-for="Telefon"
+                               type="tel"
+                               class="form-control phone-mask"
+                               placeholder="505 123 45 67"
+                               maxlength="12"
+                               inputmode="numeric"
+                               pattern="[1-9]\d{2} \d{3} \d{2} \d{2}"
+                               title="Telefon numarası 5XX XXX XX XX formatında olmalıdır." />
+                        @Html.ValidationMessageFor(m => m.Telefon, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.Email)
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", placeholder = "E-posta" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.Parola)
+                            @Html.PasswordFor(m => m.Parola, new { @class = "form-control", placeholder = "Parola" })
+                            @Html.ValidationMessageFor(m => m.Parola, "", new { @class = "text-danger" })
+
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.ParolaTekrar)
+                            @Html.PasswordFor(m => m.ParolaTekrar, new { @class = "form-control", placeholder = "Parola (Tekrar)" })
+                            @Html.ValidationMessageFor(m => m.ParolaTekrar, "", new { @class = "text-danger" })
+
+                        </div>
+                        <div class="col-12 mb-2">
+                            <small class="d-block text-center fw-semibold text-danger">
+                                Parola en az 6 karakter, en az 1 harf ve 1 rakam içermelidir.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input asp-for="KvkKOnay"
+                               class="form-check-input"
+                               id="kvkkCheck"
+                               required />
+                        <label class="form-check-label" for="kvkkCheck">
+                            KVKK metnini
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#kvkkModal">
+                                okudum, kabul ediyorum
+                            </a>
+                        </label>
+                        <span asp-validation-for="KvkKOnay" class="text-danger"></span>
+                    </div>
+                    @* reCAPTCHA *@
+                    <input type="hidden" id="recaptchaToken" name="RecaptchaToken" />
+                    <button type="submit" class="btn btn-primary w-100">Kayıt Ol</button>
+                }
+                <p class="text-center mt-3">
+                    Zaten hesabınız var mı? <a asp-action="Login">Giriş Yap</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* KVKK Modal *@
+<div class="modal fade" id="kvkkModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">KVKK Aydınlatma Metni</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @* KVKK metninizi buraya yapıştırın *@
+                <p>… burada KVKK detayları …</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=6LclekUrAAAAAAX0LWgpFudwTAB3cvF9Cd29D8EP"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+
+         $(function(){
+          $('.phone-mask').mask('000 000 00 00', { placeholder: '___ ___ __ __' });
+        });
+
+        grecaptcha.ready(function() {
+          grecaptcha.execute('6LclekUrAAAAAAX0LWgpFudwTAB3cvF9Cd29D8EP',{action:'register'})
+            .then(function(token){
+              document.getElementById("recaptchaToken").value = token;
+            });
+        });
+        // Basit DDOS koruması
+        let last=0;
+        $("form").on("submit",function(e){
+          const now=Date.now();
+          if(now-last<10000){
+            e.preventDefault();
+            alert("Lütfen 10 saniye bekleyin.");
+          } else last=now;
+        });
+    </script>
+}

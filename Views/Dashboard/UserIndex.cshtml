@@ -1,0 +1,543 @@
+﻿@model TarimHibe.Models.DashboardViewModel
+@{
+    ViewBag.Title = "";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Null-safe okuma
+    int currentYear = ViewBag.CurrentYear is int y ? y : DateTime.Now.Year;
+    bool hasApprovedCks = Model.HasCurrentCks;
+    bool hasPendingCks = ViewBag.HasPendingThisYear is bool p && p;
+}
+
+@section Styles {
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #4a6741 0%, #5a7c51 50%, #6b8c61 100%);
+            min-height: 280px;
+            position: relative;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        .hero-pattern {
+            position: absolute;
+            inset: 0;
+            background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.03"><circle cx="30" cy="30" r="2"/></g></svg>') repeat;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            opacity: .95;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,.2);
+        }
+
+        .hero-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,.3);
+        }
+
+        .welcome-badge {
+            background: rgba(255,255,255,.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,.3);
+            border-radius: 25px;
+            padding: .6rem 1.8rem;
+            display: inline-flex;
+            gap: .7rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 1.5rem;
+            color: #333;
+            transition: .3s ease;
+            margin-top: -60px;
+            position: relative;
+            z-index: 3;
+            box-shadow: 0 8px 30px rgba(0,0,0,.08);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-height: 120px;
+        }
+
+            .stats-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 40px rgba(0,0,0,.12);
+            }
+
+        .stats-number {
+            font-size: 3.2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stats-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stats-label {
+            font-size: .75rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            font-weight: 500;
+            margin-top: .35rem;
+        }
+
+        /* Genel kart */
+        .dashboard-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(90,124,101,.1);
+            transition: .3s ease;
+        }
+
+            .dashboard-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 15px 35px rgba(90,124,101,.15);
+            }
+
+        .avatar-md {
+            width: 60px;
+            height: 60px;
+        }
+
+        .avatar-title {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bg-subtle-primary {
+            background-color: rgba(13,110,253,.1) !important;
+        }
+
+        .bg-subtle-success {
+            background-color: rgba(25,135,84,.1) !important;
+        }
+
+        .bg-subtle-warning {
+            background-color: rgba(255,193,7,.1) !important;
+        }
+
+        .bg-subtle-info {
+            background-color: rgba(13,202,240,.1) !important;
+        }
+
+        /* Slide */
+        .slide-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: .3s ease;
+        }
+
+            .slide-container:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 15px 35px rgba(0,0,0,.2);
+            }
+
+        .slide {
+            min-height: 180px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.3) 100%);
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            color: #fff;
+        }
+
+        .slide-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: .5rem;
+            line-height: 1.3;
+        }
+
+        .slide-text {
+            font-size: .9rem;
+            opacity: .9;
+            line-height: 1.4;
+        }
+
+        /* 🔰 Yeşil “Başarılı” şeridi — Bootstrap'ten bağımsız güçlü özgülük */
+        .alert-soft-success {
+            background: #d4edda !important;
+            border: 1px solid #c3e6cb !important;
+            color: #155724 !important;
+            border-radius: 14px !important;
+            padding: 1rem 1.5rem !important;
+            box-shadow: 0 8px 20px rgba(0,0,0,.06);
+        }
+
+            .alert-soft-success .btn {
+                background: #1f7a39 !important;
+                color: #fff !important;
+                border: none !important;
+                border-radius: 8px !important;
+                padding: .6rem 1.1rem !important;
+                font-weight: 700 !important;
+            }
+
+        @@media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .stats-card {
+                margin-top: -40px;
+                padding: 1rem;
+                gap: .75rem;
+                border-radius: 18px;
+            }
+
+            .stats-number {
+                font-size: 2.4rem;
+            }
+
+            .stats-label {
+                font-size: .72rem;
+                margin-top: .25rem;
+            }
+
+            .container-fluid {
+                padding-left: .5rem;
+                padding-right: .5rem;
+            }
+
+            .row.g-4 {
+                margin-left: -.25rem;
+                margin-right: -.25rem;
+            }
+
+                .row.g-4 > * {
+                    padding-left: .25rem;
+                    padding-right: .25rem;
+                }
+        }
+    </style>
+}
+
+<!-- Hero -->
+<div class="hero-section">
+    <div class="hero-pattern"></div>
+    <div class="container-fluid hero-content py-5">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-8">
+                <div class="welcome-badge">
+                    <i class="fas fa-leaf"></i> @Model.WelcomeBadgeText
+                </div>
+                <h1 class="hero-title">Tarım Hibeleri<br />Yönetim Sistemi</h1>
+                <p class="hero-subtitle">@Model.HeroSubtitle</p>
+            </div>
+            <div class="col-lg-4 text-center">
+                <img src="https://i.ibb.co/DDLrhpx2/foto-baskan.jpg" alt="Buğday Taneleri" class="hero-image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="container-fluid px-4">
+    <div class="row g-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <i class="fas fa-file-alt" style="font-size:2.3rem;color:#007bff;opacity:.85;"></i>
+                <div class="stats-text">
+                    <div class="stats-number">@Model.HibeBasvuruSayisi</div>
+                    <div class="stats-label">BAŞVURDUĞUM HİBELER</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <i class="fas fa-seedling" style="font-size:2.3rem;color:#28a745;opacity:.9;"></i>
+                <div class="stats-text">
+                    <div class="stats-number">@Model.AraziSayisi</div>
+                    <div class="stats-label">ARAZİLERİM</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <i class="fas fa-paw" style="font-size:2.3rem;color:#ffc107;opacity:.9;"></i>
+                <div class="stats-text">
+                    <div class="stats-number">@Model.HayvanSayisi</div>
+                    <div class="stats-label">HAYVANLARIM</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <i class="fas fa-wrench" style="font-size:2.3rem;color:#17a2b8;opacity:.9;"></i>
+                <div class="stats-text">
+                    <div class="stats-number">@Model.EkipmanSayisi</div>
+                    <div class="stats-label">EKİPMANLARIM</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- İçerik -->
+<div class="container-fluid px-4 mt-5">
+    <h2 class="mb-4" style="color:#5a7c65;font-weight:600;">Merhaba, @ViewBag.AdSoyad!</h2>
+
+    <!-- ÇKS Durum Şeritleri -->
+    @if (hasApprovedCks)
+    {
+        <!-- Onaylı: yeşil -->
+        <div class="alert-soft-success d-flex justify-content-between align-items-center shadow-sm mb-4">
+            <div style="font-weight:600;">
+                <strong>Başarılı:</strong> Bu yıl (@currentYear) için ÇKS belgeniz onaylandı.
+            </div>
+            <a asp-controller="CksBelgesi" asp-action="Index" class="btn">Onaylı Belgeleri Görüntüle</a>
+        </div>
+    }
+    else if (hasPendingCks)
+    {
+        <!-- Beklemede: mavi -->
+        <div class="alert alert-info d-flex justify-content-between align-items-center shadow-sm mb-4 dashboard-card"
+             style="background:#d1ecf1;border:1px solid #bee5eb;border-radius:12px;padding:1rem 1.5rem;">
+            <div style="color:#0c5460;font-weight:600;">
+                <strong>Bilgi:</strong> Bu yıl yüklediğiniz ÇKS belgesi onay bekliyor.
+            </div>
+            <a asp-controller="CksBelgesi" asp-action="Index" class="btn fw-bold" style="background:#17a2b8;color:#fff;border:none;border-radius:8px;padding:.6rem 1.1rem;">Bekleyen Belgeleri Görüntüle</a>
+        </div>
+    }
+    else
+    {
+        <!-- Onaylı belge yok: senin isteğin gibi YEŞİL ve “Başarılı:” kalıbı -->
+        <div class="alert-soft-success d-flex justify-content-between align-items-center shadow-sm mb-4">
+            <div style="font-weight:600;">
+                <strong>Durum:</strong> Bu yıl (@currentYear) için ÇKS belgeniz bulunmamaktadır. lütfen ÇKS belgenizi yükleyiniz.
+            </div>
+            <a asp-controller="CksBelgesi" asp-action="Index" class="btn">ÇKS Belgesi Yükle</a>
+        </div>
+    }
+
+    <!-- Slide Section -->
+    @if (Model.SlideItems != null && Model.SlideItems.Any())
+    {
+        <div class="row mb-4">
+            @foreach (var slide in Model.SlideItems.Take(4))
+            {
+                <div class="col-lg-6 col-md-6 mb-3">
+                    <div class="slide-container" @(string.IsNullOrEmpty(slide.LinkUrl) ? "" : $"onclick=\"window.open('{slide.LinkUrl}', '_blank')\"")>
+                        <div class="slide" style="background: linear-gradient(135deg, @slide.BackgroundColor 0%, @(slide.BackgroundColor)aa 100%);">
+                            <div class="slide-overlay"></div>
+                            <div class="slide-content">
+                                <div class="slide-title">@slide.Title</div>
+                                <div class="slide-text">
+                                    @slide.Description
+                                    @if (slide.CreatedDate != default(DateTime))
+                                    {
+                                        <br />
+                                        <small><i class="fas fa-calendar-alt"></i> @slide.CreatedDate.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"))</small>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrEmpty(slide.LinkUrl))
+                                {
+                                    <div class="mt-2"><small class="text-white-50"><i class="fas fa-external-link-alt"></i> Detay için tıklayın</small></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+
+    <!-- Açık Hibeler -->
+    <div class="dashboard-card mb-4">
+        <div class="card-header bg-white border-0 py-4">
+            <h5 class="mb-0 fw-bold" style="padding-left:1.5rem;"><i class="fas fa-gift text-success" style="margin-right:1rem;"></i>Açık Hibeler</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.YeniHibeler != null && Model.YeniHibeler.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="fw-bold">Hibe Türü</th>
+                                <th class="fw-bold">Miktar</th>
+                                <th class="fw-bold">Başlangıç Tarihi</th>
+                                <th class="fw-bold">Bitiş Tarihi</th>
+                                <th class="fw-bold">Durumu</th>
+                                <th class="fw-bold">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var h in Model.YeniHibeler)
+                            {
+                                <tr>
+                                    <td><strong>@h.HibeTuru</strong></td>
+                                    <td><span class="badge bg-info">@h.Miktar.ToString("N0") ₺</span></td>
+                                    <td>@h.BaslangicTarihi.ToString("dd.MM.yyyy")</td>
+                                    <td>@h.BitisTarihi.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        <span class="badge @(h.UcretliMi ? "bg-danger" : "bg-success")">@(h.UcretliMi ? "Ücretli" : "Ücretsiz")</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-controller="Hibe" asp-action="Detay" asp-route-id="@h.HibeID" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> Detay
+                                            </a>
+                                            @if (DateTime.Now >= h.BaslangicTarihi && DateTime.Now <= h.BitisTarihi)
+                                            {
+                                                <a asp-controller="Hibe" asp-action="Basvur" asp-route-id="@h.HibeID" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-paper-plane"></i> Başvur
+                                                </a>
+                                            }
+                                            else if (DateTime.Now < h.BaslangicTarihi)
+                                            {
+                                                <button class="btn btn-sm btn-secondary" disabled><i class="fas fa-clock"></i> Yakında</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-danger" disabled><i class="fas fa-times"></i> Süresi Doldu</button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-secondary mb-0 text-center">
+                    <i class="fas fa-info-circle fa-2x mb-3"></i>
+                    <p class="mb-0">Şu anda açık hibe bulunmuyor.</p>
+                    <small class="text-muted">Yeni hibeler eklendiğinde buradan takip edebilirsiniz.</small>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Hızlı Özet -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header bg-white border-0 py-4">
+                    <h5 class="mb-0 fw-bold" style="padding-left:1.5rem;"><i class="fas fa-chart-line text-success" style="margin-right:1rem;"></i>Hızlı Özet</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <i class="fas fa-calendar-check text-success fs-1 mb-2"></i>
+                                <h6 class="text-muted">Bu Yıl Başvurularım</h6>
+                                <h4 class="text-success">@Model.HibeBasvuruSayisi</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <i class="fas fa-clock text-warning fs-1 mb-2"></i>
+                                <h6 class="text-muted">Açık Hibe Sayısı</h6>
+                                <h4 class="text-warning">@(Model.YeniHibeler?.Count ?? 0)</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <i class="fas fa-check-circle @(hasApprovedCks ? "text-success" : "text-danger") fs-1 mb-2"></i>
+                                <h6 class="text-muted">ÇKS Durumu</h6>
+                                <h6 class="@(hasApprovedCks ? "text-success" : "text-danger")">
+                                    @(hasApprovedCks ? "Onaylı" : hasPendingCks ? "Beklemede" : "Eksik")
+                                </h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <i class="fas fa-leaf text-info fs-1 mb-2"></i>
+                                <h6 class="text-muted">Toplam Varlık</h6>
+                                <h4 class="text-info">@(Model.AraziSayisi + Model.HayvanSayisi + Model.EkipmanSayisi)</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/fontawesome/js/all.min.js"></script>
+    <script>
+        // Stats hover
+        document.querySelectorAll('.stats-card').forEach(c=>{
+            c.addEventListener('mouseenter',()=>c.style.transform='translateY(-10px)');
+            c.addEventListener('mouseleave',()=>c.style.transform='translateY(-5px)');
+        });
+        // Dashboard hover
+        document.querySelectorAll('.dashboard-card').forEach(c=>{
+            c.addEventListener('mouseenter',()=>c.style.transform='translateY(-3px)');
+            c.addEventListener('mouseleave',()=>c.style.transform='translateY(0)');
+        });
+        // Sayıları animasyonlu göster
+        function animateNumbers(){
+            document.querySelectorAll('.stats-number').forEach(el=>{
+                const text=el.textContent.trim(); const m=text.match(/(\d+)/); if(!m) return;
+                const target=parseInt(m[1]); let cur=0; const step=Math.max(1,Math.round(target/50));
+                const t=setInterval(()=>{ cur+=step; if(cur>=target){cur=target; clearInterval(t);} el.textContent=text.replace(/\d+/,cur); },20);
+            });
+        }
+        document.addEventListener('DOMContentLoaded',()=>setTimeout(animateNumbers,500));
+
+        // Süresi dolan satırları soluklaştır
+        document.querySelectorAll('table tbody tr').forEach(row=>{
+            const durum=row.querySelector('.badge');
+            if(durum && durum.textContent.includes('Süresi Doldu')) row.style.opacity='0.6';
+        });
+    </script>
+}

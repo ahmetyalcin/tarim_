@@ -1,0 +1,54 @@
+﻿<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body p-4">
+
+                <h4>“@Model.HibeTuru” Başvurusu</h4>
+                <p><strong>Miktar:</strong> @Model.Miktar</p>
+                <p>
+                    <span class="badge @(Model.UcretliMi ? "bg-danger" : "bg-success")">
+                        @(Model.UcretliMi ? "Ücretli" : "Ücretsiz")
+                    </span>
+                </p>
+
+                @* horizontal line *@
+                <hr class="my-3" />
+
+                @* your rich text description *@
+                <div class="mb-4">
+                    @Html.Raw(Model.HibeAciklama)
+                </div>
+
+                @* another horizontal line *@
+                <hr class="my-3" />
+
+                <form asp-action="Apply" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="HibeID" value="@Model.HibeID" />
+
+
+                    <div class="mb-3">
+                        <label class="form-label">Hangi arazi ile başvuruyorsunuz?</label>
+                        @Html.DropDownList(
+                                 "AraziID",
+                                 Model.AraziList,
+                                 "-- Seçiniz --",
+                                 new { @class = "form-select", required = "required" }
+                                 )
+                    </div>
+
+                    @if (Model.UcretliMi)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Dekont Yükle</label>
+                            <input type="file" name="DekontFile" class="form-control" required />
+                        </div>
+                    }
+
+                    <button type="submit" class="btn btn-success">Başvuruyu Tamamla</button>
+                    <a asp-action="Index" class="btn btn-secondary ms-2">İptal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,16 @@
+﻿@{
+    Layout = "~/Views/Shared/_BlankLayout.cshtml";
+    ViewBag.Title = "Kayıt Başarılı";
+}
+
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="card shadow p-4" style="max-width: 400px; border-radius: 1rem;">
+        <div class="text-center mb-4">
+            <img src="~/assets/images/logo_2x.png" alt="Başarılı" style="width:70px;" />
+        </div>
+        <h3 class="text-center mb-3 text-success">Tebrikler!</h3>
+        <p class="text-center">Üyeliğiniz başarıyla oluşturuldu.</p>
+        <p class="text-center mb-4">Artık hesabınızla sisteme giriş yapabilirsiniz.</p>
+        <a class="btn btn-primary w-100 mb-2" asp-action="Login">Giriş Yap</a>
+    </div>
+</div>

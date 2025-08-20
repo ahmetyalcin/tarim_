@@ -1,0 +1,142 @@
+﻿@model List<TarimHibe.Models.CksOnayViewModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewBag.Title = "CKS Onaylama";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var yillar = (SelectList)ViewBag.Yillar;
+    var durumlar = (SelectList)ViewBag.Durumlar;
+}
+
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+
+                <form asp-action="Index" method="get" class="row g-2 align-items-end mb-4">
+                    @Html.AntiForgeryToken()
+                    <div class="col-auto">
+                        <label class="form-label">Yıl</label>
+                        @Html.DropDownList("yil", yillar, "-- Hepsi --", new { @class = "form-select" })
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Durum</label>
+                        @Html.DropDownList("durum", durumlar, "-- Hepsi --", new { @class = "form-select" })
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Yıl</th>
+                                <th>Kullanıcı</th>
+                                <th>Arazi</th>
+                                <th>Belge</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model)
+                            {
+                                <tr>
+                                    <td>@c.CksID</td>
+                                    <td>@c.Yil</td>
+                                    <td>@c.Kullanici</td>
+                                    <td>@c.AraziBilgi</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(c.BelgeYolu))
+                                        {
+                                            <a href="~/uploads/cks/@c.BelgeYolu" target="_blank" class="link-primary">
+                                                Görüntüle
+                                            </a>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            string txt = c.OnayDurumu == 1 ? "Onaylandı"
+                                            : c.OnayDurumu == 2 ? "Reddedildi"
+                                            : "Beklemede";
+                                            string cls = c.OnayDurumu == 1 ? "bg-success"
+                                            : c.OnayDurumu == 2 ? "bg-danger"
+                                            : "bg-warning";
+                                        }
+                                        <span class="badge @cls">@txt</span>
+                                    </td>
+                                    <td>
+                                        <form asp-action="Approve" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@c.CksID" />
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-success"
+                                            @(c.OnayDurumu == 1 ? "disabled" : "")>
+                                                Onayla
+                                            </button>
+                                        </form>
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-danger ms-1"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#rejectModal"
+                                                data-id="@c.CksID"
+                                        @(c.OnayDurumu == 2 ? "disabled" : "")>
+                                            Reddet
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- REDDET MODAL -->
+                <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form asp-action="Reject" method="post">
+                                @Html.AntiForgeryToken()
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="rejectModalLabel">Reddetme Nedeni</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="id" id="rejectId" />
+                                    <div class="mb-3">
+                                        <label for="rejectReason" class="form-label">Sebep (isteğe bağlı)</label>
+                                        <textarea class="form-control" id="rejectReason" name="reason" rows="2" placeholder="Red sebebinizi yazınız..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                                    <button type="submit" class="btn btn-danger">Reddet</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                </div>
+                </div>
+                </div>
+
+
+
+
+@section Scripts {
+    <script>
+        var rejectModal = document.getElementById('rejectModal');
+        rejectModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            rejectModal.querySelector('#rejectId').value = id;
+            rejectModal.querySelector('#rejectReason').value = "";
+        });
+    </script>
+}

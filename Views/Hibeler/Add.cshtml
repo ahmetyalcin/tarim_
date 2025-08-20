@@ -1,0 +1,123 @@
+﻿@model TarimHibe.Models.Hibe
+@{
+    ViewData["Title"] = "Hibe Oluşturma ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Hibe Ekleme</h4>
+
+                @* Başarı / Hata mesajları *@
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                }
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                }
+
+                <form asp-action="Add" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hibe Türü</label>
+                            <input type="text" name="HibeTuru" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Miktar</label>
+                            <input type="number" name="Miktar" class="form-control" min="0" required />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ücretli mi?</label>
+                            <select name="UcretliMi" class="form-select" required>
+                                <option value="false">Ücretsiz</option>
+                                <option value="true">Ücretli</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hibe Açıklama</label>
+                            <div id="quill-editor" style="height: 200px;"></div>
+                            <input type="hidden" name="HibeAciklama" id="HibeAciklama" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Başlangıç Tarihi</label>
+                            <input type="date"
+                                   name="BaslangicTarihi"
+                                   class="form-control"
+                                   value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                   required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bitiş Tarihi</label>
+                            <input type="date"
+                                   name="BitisTarihi"
+                                   class="form-control"
+                                   value="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd")"
+                                   required />
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                        <button type="submit" class="btn btn-success">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+}
+
+@section Scripts {
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        // Quill editörünü başlat
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Hibe açıklamasını buraya yazın...'
+        });
+
+        // Editör içeriği değiştiğinde hidden input'u güncelle (real-time)
+        quill.on('text-change', function() {
+            var content = quill.root.innerHTML;
+            document.getElementById('HibeAciklama').value = content;
+            console.log('Content updated:', content); // Debug için
+        });
+
+        // Form gönderilmeden önce editör içeriğini hidden input'a aktar
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var content = quill.root.innerHTML;
+            document.getElementById('HibeAciklama').value = content;
+
+            console.log('Form submitting with content:', content); // Debug için
+
+            // Eğer içerik boşsa uyarı ver (opsiyonel)
+            if (content.trim() === '<p><br></p>' || content.trim() === '') {
+                console.log('Content is empty');
+            }
+        });
+    </script>
+}

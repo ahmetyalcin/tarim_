@@ -1,0 +1,268 @@
+﻿@model TarimHibe.Models.Arazi
+
+@{
+    ViewData["Title"] = "Arazi Düzenle";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var araziList = ViewBag.AraziMulkiyet as List<SelectListItem>;
+    var araziTurList = ViewBag.AraziTurleri as List<SelectListItem>;
+    var araziSulamaList = ViewBag.Arazisulama as List<SelectListItem>;
+    var araziKullanimList = ViewBag.AraziKullanim as List<SelectListItem>;
+
+ 
+}
+
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512–XQoYMqMTK8LpLeecP01trjM2rgC/Wh9RGrKIqlBxyJ0vEbsP2H3VfF5v5vgR3x9MjZYVOEO0PHDQkh8Wg8IpXA=="
+      crossorigin="" />
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Arazi Düzenle</h4>
+
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" value="@Model.Id" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">İlçe</label>
+                                <input type="text" class="form-control bg-light text-muted" value="@ViewBag.IlceAdi" disabled />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Mahalle</label>
+                                <input type="text" class="form-control bg-light text-muted" value="@ViewBag.MahalleAdi" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Ada</label>
+                                <input type="text" class="form-control bg-light text-muted" value="@Model.Ada" disabled />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Parsel</label>
+                                <input type="text" class="form-control bg-light text-muted" value="@Model.Parsel" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Mülkiyet</label>
+                                <select name="MulkiyetId" class="form-select">
+                                    @foreach (var item in araziList)
+                                    {
+            @:<option value="@item.Value" @(item.Value == Model.MulkiyetId.ToString() ? "selected" : "")>@item.Text</option>
+
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Arazi Türü</label>
+                                <select name="AraziTurId" class="form-select">
+                                    @foreach (var item in araziTurList)
+                                    {
+                                  @:<option value="@item.Value" @(item.Value == Model.AraziTurId.ToString() ? "selected" : "")>@item.Text</option>
+
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Sulama</label>
+                                <select name="AraziSulamaId" class="form-select">
+                                    @foreach (var item in araziSulamaList)
+                                    {
+                             @:<option value="@item.Value" @(item.Value == Model.AraziSulamaId.ToString() ? "selected" : "")>@item.Text</option>
+}
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Kullanım Şekli</label>
+                                <select name="AraziKullanimId" class="form-select">
+                                    @foreach (var item in araziKullanimList)
+                                    {
+               @:<option value="@item.Value" @(item.Value == Model.AraziKullanimId.ToString() ? "selected" : "")>@item.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Mevkii</label>
+                                <input type="text" name="Mevkii" class="form-control" value="@Model.Mevkii" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Toplam Alan (da)</label>
+                                <input type="number" name="ToplamAlani" step="0.01" class="form-control" value="@Model.ToplamAlani" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hisse Alanı (da)</label>
+                                <input type="number" name="HisseAlani" step="0.01" class="form-control" value="@Model.HisseAlani" />
+                            </div>
+                        </div>
+
+                     <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">ÇKS Belgesi</label>
+
+                        @if (Model.CKSBelgeleri?.FirstOrDefault()?.OnayDurumu == 0) // Onay sürecinde
+                        {
+                             var dosya = Model.CKSBelgeleri.FirstOrDefault().BelgeDosyasi;
+                            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Bu belge onay sürecinde. Yeni belge yükleyemezsiniz.
+                            </div>
+                               <div class="mt-3 d-flex align-items-center gap-2">
+                                    <i class="fas fa-file-alt text-primary fa-lg"></i>
+                                    <a href="~/uploads/cks/@dosya" target="_blank" class="text-decoration-none">
+                                        <span class="badge bg-light text-dark border">
+                                            Mevcut Belgeyi Görüntüle
+                                        </span>
+                                    </a>
+                                </div>
+                        }
+                        else
+                        {
+                           
+
+                            @if (!string.IsNullOrEmpty(Model.CKSBelgeleri?.FirstOrDefault()?.BelgeDosyasi))
+                            {
+                                var dosya = Model.CKSBelgeleri.FirstOrDefault().BelgeDosyasi;
+                                <div class="mt-3 d-flex align-items-center gap-2">
+                                    <i class="fas fa-file-alt text-primary fa-lg"></i>
+                                    <a href="~/uploads/cks/@dosya" target="_blank" class="text-decoration-none">
+                                        <span class="badge bg-light text-dark border">
+                                            Mevcut Belgeyi Görüntüle
+                                        </span>
+                                    </a>
+                                </div>
+                            }
+
+                            @if (Model.CKSBelgeleri?.FirstOrDefault()?.OnayDurumu == 2) // Onaylanmadıysa
+                            {
+                                 <input type="file" name="CksBelgesi" class="form-control" />
+                                <div class="alert alert-danger mt-2" role="alert">
+                                    Önceki belge onaylanmadı. Yeni belge yükleyebilirsiniz.
+                                </div>
+                            }
+                        }
+                    </div>
+
+                </div>
+
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div id="map" style="height:600px; border:1px solid #ccc; border-radius:4px;"></div>
+    </div>
+</div>
+
+@section Scripts {
+   <!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.js"></script>
+
+    <script>
+        const ilce = '@Model.Ilce';
+        const mahalle = '@Model.Mahalle';
+        const ada = '@Model.Ada';
+        const parsel = '@Model.Parsel';
+
+      
+        var satellite = L.tileLayer(
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+            maxZoom: 19
+          }
+        );
+
+        // 2) Map'i satellite ile oluştur
+        var map = L.map('map', {
+          center: [38.4175, 27.1423],
+          zoom: 13,
+          attributionControl: false,
+          layers: [ satellite ]   // burada ekledik
+        });
+
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OSM', maxZoom:19 });
+        L.control.layers({ 'Harita': osm, 'Uydu': satellite }).addTo(map);
+
+
+
+             L.control.attribution({
+          position: 'bottomright',
+          prefix: ''  
+        })
+        .addAttribution('Tarımsal Hizmetler Dairesi Başkanlığı')
+        .addTo(map);
+
+        // 3) layerGroup hâlâ çalışır
+        var layerGroup = L.layerGroup().addTo(map);
+
+          // 2) UTM Zone 35N (WGS84) tanımı
+          proj4.defs("EPSG:32635","+proj=utm +zone=35 +datum=WGS84 +units=m +no_defs");
+
+
+            fetch('/Arazi/AraziKoordinatGetir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    ilce: ilce,
+                    mahalle: mahalle,
+                    ada: ada,
+                    parsel: parsel
+                })
+            })
+        .then(resp => resp.json())
+        .then(res => {
+            if (res.success && res.data) {
+                 var latlngs = res.data.map(function(pt){
+                  var ll = proj4("EPSG:32635","EPSG:4326", pt);
+                  return [ ll[1], ll[0] ];  // [lat, lng]
+                });
+                console.log('Gelen veri:', res.data);
+                const polygon = L.polygon(latlngs, { color: 'red', weight: 4 }).addTo(map);
+                map.fitBounds(polygon.getBounds(), { maxZoom: 18 });
+
+            } else {
+                console.log('Gelen veri:', res.data);
+                console.warn('Polygon çizimi başarısız');
+            }
+        })
+        .catch(err => console.error('Hata:', err));
+    </script>
+}

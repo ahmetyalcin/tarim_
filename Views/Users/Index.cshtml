@@ -1,0 +1,405 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Kullanıcılar";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" />
+    <style>
+        /* Modern tablo stilleri */
+        .table-modern {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: none;
+            font-size: 14px;
+        }
+
+            .table-modern thead th {
+                background: #f8f9fa;
+                border: none;
+                font-weight: 600;
+                color: #495057;
+                padding: 15px 12px;
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.5px;
+            }
+
+            .table-modern tbody td {
+                border: none;
+                padding: 15px 12px;
+                vertical-align: middle;
+                border-bottom: 1px solid #f1f3f4;
+            }
+
+            .table-modern tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+
+            .table-modern tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+        /* Status badge stilleri */
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-admin {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-user {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        /* Buton stilleri */
+        .btn-action {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid #e0e0e0;
+            background: white;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+            .btn-action:hover {
+                background: #f5f5f5;
+                border-color: #ccc;
+                color: #333;
+            }
+
+            .btn-action:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+        .btn-toggle-admin {
+            border-color: #1976d2;
+            color: #1976d2;
+        }
+
+            .btn-toggle-admin:hover {
+                background: #1976d2;
+                color: white;
+            }
+
+        .btn-toggle-user {
+            border-color: #7b1fa2;
+            color: #7b1fa2;
+        }
+
+            .btn-toggle-user:hover {
+                background: #7b1fa2;
+                color: white;
+            }
+
+        /* DataTables özel stilleri */
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            margin-top: 15px;
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                padding: 8px 12px;
+                margin: 0 2px;
+                border-radius: 6px;
+                border: 1px solid #e0e0e0;
+                background: white;
+                color: #666;
+            }
+
+                .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+                    background: #f5f5f5;
+                    border-color: #ccc;
+                }
+
+                .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+                    background: #1976d2;
+                    color: white;
+                    border-color: #1976d2;
+                }
+
+        .dataTables_processing {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            margin-left: -100px;
+            margin-top: -26px;
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: 500;
+            color: #666;
+        }
+
+        .table-responsive {
+            min-height: 400px;
+            background: white;
+            border-radius: 8px;
+            padding: 0;
+        }
+
+        /* Arama ve filtre stilleri */
+        .search-filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+            .search-filters .form-control,
+            .search-filters .form-select {
+                border-radius: 6px;
+                border: 1px solid #e0e0e0;
+                padding: 10px 15px;
+            }
+
+                .search-filters .form-control:focus,
+                .search-filters .form-select:focus {
+                    border-color: #1976d2;
+                    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+                }
+
+        /* Kart stilleri */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-body {
+            padding: 0;
+        }
+    </style>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="search-filters">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <input id="userSearch"
+                           class="form-control"
+                           style="width: 300px;"
+                           placeholder="🔍 Kullanıcı ara..." />
+
+                    <select id="roleFilter" class="form-select" style="width: 150px;">
+                        <option value="">Tüm Roller</option>
+                        <option value="Admin">Admin</option>
+                        <option value="User">User</option>
+                    </select>
+                </div>
+
+                <div class="text-muted">
+                    <small>Toplam kullanıcı sayısı yükleniyor...</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="usersTable" class="table table-modern">
+                        <thead>
+                            <tr>
+                                <th data-name="UserID">ID</th>
+                                <th data-name="TcKimlik">TC Kimlik</th>
+                                <th data-name="AdSoyad">Ad Soyad</th>
+                                <th data-name="Telefon">Telefon</th>
+                                <th data-name="Email">E-posta</th>
+                                <th data-name="RoleName">Rol</th>
+                                <th data-orderable="false">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Veriler AJAX ile yüklenecek -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(function(){
+            // DataTable init with server-side processing
+            var dt = $('#usersTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '@Url.Action("GetUsers", "Users")',
+                    type: 'POST',
+                    data: function(d) {
+                        // Özel filtreler ekle
+                        d.roleFilter = $('#roleFilter').val();
+                        return d;
+                    },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    }
+                },
+                columns: [
+                    {
+                        data: 'userID',
+                        name: 'UserID',
+                        orderable: true
+                    },
+                    {
+                        data: 'tcKimlik',
+                        name: 'TcKimlik',
+                        orderable: true
+                    },
+                    {
+                        data: 'adSoyad',
+                        name: 'AdSoyad',
+                        orderable: true
+                    },
+                    {
+                        data: 'telefon',
+                        name: 'Telefon',
+                        orderable: true
+                    },
+                    {
+                        data: 'email',
+                        name: 'Email',
+                        orderable: true
+                    },
+                    {
+                        data: 'roleName',
+                        name: 'RoleName',
+                        orderable: true,
+                        render: function(data, type, row) {
+                            var badgeClass = data === 'Admin' ? 'badge-admin' : 'badge-user';
+                            return '<span class="badge-status ' + badgeClass + '">' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        render: function(data, type, row) {
+                            var toRole = row.roleName === "Admin" ? "User" : "Admin";
+                            var buttonText = row.roleName === "Admin" ? "User Yap" : "Admin Yap";
+                            var buttonClass = row.roleName === "Admin" ? "btn-toggle-user" : "btn-toggle-admin";
+
+                            return '<button class="btn btn-action ' + buttonClass + ' toggle-role" ' +
+                                   'data-id="' + row.userID + '" ' +
+                                   'data-to-role="' + toRole + '">' +
+                                   buttonText +
+                                   '</button>';
+                        }
+                    }
+                ],
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                language: {
+                    processing: "⏳ Yükleniyor...",
+                    search: "Ara:",
+                    lengthMenu: "Sayfa başına _MENU_ kayıt",
+                    info: "_TOTAL_ kayıttan _START_-_END_ arası",
+                    infoEmpty: "Kayıt bulunamadı",
+                    infoFiltered: "(_MAX_ kayıt içerisinden)",
+                    paginate: {
+                        first: "İlk",
+                        last: "Son",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    emptyTable: "Tabloda veri bulunmamaktadır",
+                    zeroRecords: "Eşleşen kayıt bulunamadı"
+                },
+                drawCallback: function(settings) {
+                    // Her sayfa yenilendiğinde tooltip'leri yeniden başlat
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+
+            // Özel arama - DataTables'ın kendi arama özelliğini devre dışı bırak
+            $('#usersTable_filter').hide();
+
+            // Global search
+            var searchTimer;
+            $('#userSearch').on('keyup', function(){
+                clearTimeout(searchTimer);
+                var searchValue = this.value;
+                searchTimer = setTimeout(function() {
+                    dt.search(searchValue).draw();
+                }, 500); // 500ms gecikme ile arama
+            });
+
+            // Role filtresi
+            $('#roleFilter').on('change', function(){
+                dt.draw(); // Sayfa yenileme
+            });
+
+            // Role toggle butonu
+            $('#usersTable').on('click', '.toggle-role', function(){
+                var btn = $(this);
+                var id = btn.data('id');
+                var toRole = btn.data('to-role');
+                var row = btn.closest('tr');
+
+                console.log('Button clicked:', { id: id, toRole: toRole }); // Debug
+
+                // Buton durumunu devre dışı bırak
+                btn.prop('disabled', true).text('Güncelleniyor...');
+
+                $.post('@Url.Action("ToggleRole", "Users")', {
+                    id: id,
+                    toRole: toRole
+                })
+                .done(function(res) {
+                    console.log('Response:', res); // Debug
+
+                    if (res.success) {
+                        // Başarılı mesaj (eğer toastr varsa)
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success('Rol başarıyla güncellendi');
+                        } else {
+                            alert('Rol başarıyla güncellendi');
+                        }
+
+                        // Tabloyu yenile
+                        dt.draw(false); // false = mevcut sayfada kal
+                    } else {
+                        alert(res.message || 'Bir hata oluştu');
+                        btn.prop('disabled', false);
+                        btn.text(toRole === 'Admin' ? 'Admin Yap' : 'User Yap');
+                    }
+                })
+                .fail(function(xhr, status, error) {
+                    console.error('AJAX Error:', { xhr: xhr, status: status, error: error }); // Debug
+                    alert('Bağlantı hatası oluştu: ' + error);
+                    btn.prop('disabled', false);
+                    btn.text(toRole === 'Admin' ? 'Admin Yap' : 'User Yap');
+                });
+            });
+        });
+    </script>
+}
+
+@* Anti-forgery token for AJAX requests *@
+@Html.AntiForgeryToken()

@@ -1,0 +1,138 @@
+﻿@model List<TarimHibe.Models.Hayvanlarim>
+@{
+    ViewBag.Title = "Hayvanlarım";
+}
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="card-title mb-0">Hayvanlarım</h4>
+                        <p class="card-title-desc">Kayıtlı hayvanlarınızın listesi</p>
+                    </div>
+                    <a href="@Url.Action("Add", "Hayvanlarim")" class="btn btn-primary">
+                        <i class="ri-add-line align-middle me-1"></i> Yeni Hayvan Ekle
+                    </a>
+                </div>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Hayvan Türü Grubu</th>
+                                <th>Hayvan Alt Grubu</th>
+                                <th>Hayvan Türü</th>
+                                @*<th>İlçe</th>
+                                <th>Mahalle</th>*@
+                                <th>Adet</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Count > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Id</td>
+                                        <td>@item.HayvanTuruGruplari.GrupAdi</td>
+                                        <td>@item.HayvanAltGruplari.AltGrupAdi</td>
+                                        <td>@item.HayvanTurleri.TurAdi</td>
+                                        @*<td>@(Model.FirstOrDefault(x => x.Id == hayvan.Ilce)?.IlceAdi ?? "-")</td>
+                                        <td>@hayvan.Mahalle</td>*@
+                                        <td>@item.Adet</td>
+                                        <td>
+                                            <span class="badge @(item.Durum == "Aktif" ? "bg-success" : "bg-danger")">
+                                                @item.Durum
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="@Url.Action("Edit", "Hayvanlarim", new { id = item.Id })"
+                                                   class="btn btn-primary btn-sm" title="Düzenle">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger btn-sm delete-hayvan"
+                                                        data-id="@item.Id" title="Sil">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center">Henüz kayıtlı hayvan bulunmamaktadır.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+
+        $('.delete-hayvan').click(function () {
+            var id = $(this).data('id');
+            var row = $(this).closest('tr');
+
+            if (confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete", "Hayvanlarim")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (result) {
+                        if (result.success) {
+                            row.fadeOut(300, function () {
+                                $(this).remove();
+
+                                // Tabloda başka kayıt kalmadıysa uyarı mesajı ekle
+                                if ($('tbody tr').length === 0) {
+                                    $('tbody').append('<tr><td colspan="7" class="text-center">Henüz kayıtlı hayvan bulunmamaktadır.</td></tr>');
+                                }
+                            });
+                        } else {
+                            toastr.error(result.message);
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Silme işlemi sırasında bir hata oluştu.');
+                    }
+                });
+            }
+        });
+
+
+
+
+        });
+    </script>
+}

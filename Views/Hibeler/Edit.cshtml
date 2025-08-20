@@ -1,0 +1,115 @@
+﻿@model TarimHibe.Models.Hibe
+@{
+    ViewData["Title"] = "Hibe Düzenle";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-4">Hibe Düzenle</h4>
+
+        @* Başarı / Hata mesajları *@
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="HibeID" value="@Model.HibeID" />
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Hibe Türü</label>
+                    <input type="text" name="HibeTuru" class="form-control"
+                           value="@Model.HibeTuru" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Miktar</label>
+                    <input type="number" name="Miktar" class="form-control"
+                           value="@Model.Miktar" min="0" required />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Ücretli mi?</label>
+                    @Html.DropDownListFor(m => m.UcretliMi, new List<SelectListItem>
+                    {
+                    new SelectListItem { Text = "Ücretsiz", Value = "false" },
+                    new SelectListItem { Text = "Ücretli",  Value = "true"  },
+                    }, htmlAttributes: new { @class = "form-select", required = "required" })
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Hibe Açıklama</label>
+                    <div id="quill-editor" style="height: 200px;"></div>
+                    <input type="hidden" name="HibeAciklama" id="HibeAciklama" value="@Html.Raw(Model.HibeAciklama)" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Başlangıç Tarihi</label>
+                    <input type="date" name="BaslangicTarihi" class="form-control"
+                           value="@(Model.BaslangicTarihi.ToString("yyyy-MM-dd"))" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Bitiş Tarihi</label>
+                    <input type="date" name="BitisTarihi" class="form-control"
+                           value="@(Model.BitisTarihi.ToString("yyyy-MM-dd"))" required />
+                </div>
+            </div>
+
+            <div class="text-end">
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                <button type="submit" class="btn btn-success">Güncelle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+}
+
+@section Scripts {
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        // Mevcut içeriği al
+        var existingContent = document.getElementById('HibeAciklama').value;
+
+        // Quill editörünü başlat
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Hibe açıklamasını buraya yazın...'
+        });
+
+        // Mevcut içeriği editöre yükle
+        if (existingContent && existingContent.trim() !== '') {
+            quill.root.innerHTML = existingContent;
+        }
+
+        // Editör içeriği değiştiğinde hidden input'u güncelle
+        quill.on('text-change', function() {
+            document.getElementById('HibeAciklama').value = quill.root.innerHTML;
+        });
+
+        // Form gönderilmeden önce editör içeriğini hidden input'a aktar
+        document.querySelector('form').addEventListener('submit', function() {
+            document.getElementById('HibeAciklama').value = quill.root.innerHTML;
+        });
+    </script>
+}

@@ -1,0 +1,141 @@
+﻿@model List<TarimHibe.Models.Hibe>
+@{
+    ViewBag.Title = "Hibelerim";
+    bool? filter = ViewBag.FilterYayinda as bool?;
+}
+
+<div class="d-flex justify-content-start mb-3">
+    <a asp-action="Index" asp-route-yayinda="" class="btn me-2 @(filter==null ? "btn-primary" : "btn-outline-primary")">
+        Tümü
+    </a>
+    <a asp-action="Index" asp-route-yayinda="true" class="btn me-2 @(filter==true ? "btn-primary" : "btn-outline-success")">
+        Aktif
+    </a>
+    <a asp-action="Index" asp-route-yayinda="false" class="btn @(filter==false ? "btn-primary" : "btn-outline-danger")">
+        Pasif
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="card-title mb-0">Hibeler</h4>
+                        <p class="card-title-desc">Hibeler listesi</p>
+                    </div>
+                    <a href="@Url.Action("Add", "Hibeler")" class="btn btn-primary">
+                        <i class="ri-add-line align-middle me-1"></i> Yeni Hibe Ekle
+                    </a>
+                </div>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Hibe Türü</th>
+                                <th>Miktar</th>
+                                <th>Ücretli mi?</th>
+                                <th>Başlangıç</th>
+                                <th>Bitiş</th>
+                                <th>Yayında</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.HibeID</td>
+                                    <td>@item.HibeTuru</td>
+                                    <td>@item.Miktar</td>
+                                    <td>
+                                        <span class="badge @(item.UcretliMi? "bg-warning":"bg-success")">
+                                            @(item.UcretliMi ? "Ücretli" : "Ücretsiz")
+                                        </span>
+                                    </td>
+                                    <td>@item.BaslangicTarihi.ToString("dd.MM.yyyy")</td>
+                                    <td>@item.BitisTarihi.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        <span class="badge @(item.Yayinda ? "bg-success":"bg-danger")">
+                                            @(item.Yayinda ? "Aktif" : "Pasif")
+                                        </span>
+                                    </td>
+                                    <td>
+
+                                        <a asp-action="Edit" asp-route-id="@item.HibeID"
+                                           class="btn btn-sm btn-primary" title="Düzenle">
+                                            <i class="ri-pencil-line"></i>
+                                        </a>
+
+                                        <button class="btn btn-sm btn-outline-primary toggle-hibe" data-id="@item.HibeID">
+                                            <i class="fas @(item.Yayinda? "fa-toggle-on":"fa-toggle-off")"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('.toggle-hibe').click(function () {
+                var btn = $(this);
+                var id = btn.data('id');
+                var row = btn.closest('tr');
+
+                $.ajax({
+                    url: '@Url.Action("ToggleYayinda", "Hibeler")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (res) {
+                        if (res.success) {
+                            // Badge güncelle
+                            var yeni = res.yayinda;
+                            var badge = row.find('td:eq(9) .badge');
+                            badge
+                                .toggleClass('bg-success bg-danger')
+                                .text(yeni ? 'Aktif' : 'Pasif');
+
+                            // Buton güncelle
+                            btn
+                                .toggleClass('btn-outline-primary btn-outline-success btn-outline-danger')
+                                .find('i')
+                                    .toggleClass('fa-toggle-on fa-toggle-off');
+                            btn.find('i').after(' ' + (yeni ? 'Pasife Al' : 'Aktifleştir'));
+                        } else {
+                            toastr.error(res.message || 'Bir hata oluştu.');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Sunucu hatası, tekrar deneyin.');
+                    }
+                });
+            });
+        });
+    </script>
+}
